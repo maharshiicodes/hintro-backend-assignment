@@ -5,6 +5,7 @@ import { traceMiddleware } from './middlewares/trace.js';
 import { loggerMiddleware } from './middlewares/logger.js';
 import { errorHandler } from './middlewares/error.js';
 import meetingRoutes from './routes/meetings.js';
+import actionItemsRouter from './routes/actionItems.js';
 
 const app = express();
 const PORT = 8080;
@@ -17,6 +18,7 @@ app.use(loggerMiddleware);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/meetings', meetingRoutes);
+app.use('/api', actionItemsRouter);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'UP' });

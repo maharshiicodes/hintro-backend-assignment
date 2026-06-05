@@ -45,3 +45,13 @@ export const analyses = pgTable('analyses', {
   followUps: jsonb('follow_ups').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+export const reminders = pgTable('reminders', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  actionItemId: uuid('action_item_id')
+    .notNull()
+    .references(() => actionItems.id, { onDelete: 'cascade' }),
+  sentAt: timestamp('sent_at').defaultNow().notNull(),
+  channel: text('channel').notNull(),
+  status: text('status').notNull(),
+});

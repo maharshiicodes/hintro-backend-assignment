@@ -15,7 +15,7 @@ const registerSchema = z.object({
   password: z.string().min(6),
 });
 
-router.post('/register', async (req, res)  => {
+router.post('/register', async (req, res , next)  => {
   try {
   
     const parsedData = registerSchema.safeParse(req.body);
@@ -62,7 +62,7 @@ const loginSchema = z.object({
   password: z.string(),
 });
 
-router.post('/login', async (req ,res) => {
+router.post('/login', async (req ,res , next) => {
   try {
     const parsedData = loginSchema.safeParse(req.body);
     if (!parsedData.success) {
