@@ -42,6 +42,30 @@ app.use('/api', actionItemsRouter);
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'UP' });
 });
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'UP' });
+});
+
+app.get('/api/evaluation', (req, res) => {
+  res.json({
+    candidateName: 'Maharshi Lavana',
+    email: 'maharshilavana@gmail.com',
+    repositoryUrl: 'https://github.com/maharshiicodes/hintro-backend-assignment',
+    deployedUrl: 'https://hintro-backend-assignment-production.up.railway.app',
+    externalIntegration: 'Discord Webhook',
+    features: [
+      'Authentication',
+      'AI Analysis',
+      'Citation Grounding',
+      'Action Item Management',
+      'Overdue Detection',
+      'Reminder Scheduler',
+      'Discord Integration',
+      'Rate Limiting',
+    ],
+  });
+});
 app.use(errorHandler);
 
 startCronJobs();
