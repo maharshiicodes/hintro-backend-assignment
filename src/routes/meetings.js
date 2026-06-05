@@ -54,13 +54,56 @@ router.post('/', requireAuth, async (req, res, next) => {
 
 router.get('/', requireAuth, async (req, res, next) => {
   try {
-    const allMeetings = await db.select().from(meetings)
-      .where(eq(meetings.userId, req.user.userId));
+    const querySchema = z.object({
+      page: z.coerce.number().min(1).default(1),
+      limit: z.coerce.number().min(1).max(100).default(10),
+      title: z.string().optional(),
+      from: z.string().datetime({ offset: true }).optional(),
+      to: z.string().datetime({ offset: true }).optional(),
+    });
+
+    const parsed = querySchema.safeParse(req.query);
+    if (!parsed.success) {
+      return res.status(400).json({
+        traceId: req.traceId,
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0].message },
+      });
+    }
+
+    const { page, limit, title, from, to } = parsed.data;
+    const offset = (page - 1) * limit;
+
+    const conditions = and(
+      eq(meetings.userId, req.user.userId),
+      title ? ilike(meetings.title, `%${title}%`) : undefined,
+      from ? gte(meetings.meetingDate, new Date(from)) : undefined,
+      to ? lte(meetings.meetingDate, new Date(to)) : undefined,
+    );
+
+    const [data, totalResult] = await Promise.all([
+      db.select().from(meetings)
+        .where(conditions)
+        .orderBy(meetings.createdAt)
+        .limit(limit)
+        .offset(offset),
+      db.select({ count: count() }).from(meetings).where(conditions),
+    ]);
+
+    const total = Number(totalResult[0].count);
 
     return res.status(200).json({
       traceId: req.traceId,
       success: true,
-      data: allMeetings,
+      data: {
+        meetings: data,
+        pagination: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / limit),
+        },
+      },
     });
   } catch (err) {
     next(err);

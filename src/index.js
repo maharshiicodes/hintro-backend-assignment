@@ -6,6 +6,7 @@ import { loggerMiddleware } from './middlewares/logger.js';
 import { errorHandler } from './middlewares/error.js';
 import meetingRoutes from './routes/meetings.js';
 import actionItemsRouter from './routes/actionItems.js';
+import { startCronJobs } from './reminders/reminderJob.js';
 
 const app = express();
 const PORT = 8080;
@@ -25,6 +26,7 @@ app.get('/health', (req, res) => {
 });
 app.use(errorHandler);
 
+startCronJobs();
 app.listen(PORT, () => {
   console.log(`server is running on http://localhost:${PORT}`);
 });
