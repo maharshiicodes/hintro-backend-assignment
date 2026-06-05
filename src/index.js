@@ -40,10 +40,6 @@ app.use('/api', actionItemsRouter);
 
 
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'UP' });
-});
-
-app.get('/health', (req, res) => {
   res.json({ status: 'UP' });
 });
 
