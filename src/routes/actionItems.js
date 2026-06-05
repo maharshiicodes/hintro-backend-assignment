@@ -1,3 +1,105 @@
+/**
+ * @swagger
+ * /api/action-items:
+ *   post:
+ *     summary: Create an action item manually
+ *     tags: [Action Items]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [meetingId, task, assignee]
+ *             properties:
+ *               meetingId:
+ *                 type: string
+ *               task:
+ *                 type: string
+ *               assignee:
+ *                 type: string
+ *               dueDate:
+ *                 type: string
+ *                 example: 2026-06-20T00:00:00Z
+ *               citations:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     timestamp:
+ *                       type: string
+ *     responses:
+ *       201:
+ *         description: Action item created
+ *       404:
+ *         description: Meeting not found
+ */
+
+/**
+ * @swagger
+ * /api/action-items:
+ *   get:
+ *     summary: Get action items with optional filters
+ *     tags: [Action Items]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, IN_PROGRESS, COMPLETED]
+ *       - in: query
+ *         name: assignee
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: meetingId
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of action items
+ */
+
+/**
+ * @swagger
+ * /api/action-items/{id}/status:
+ *   patch:
+ *     summary: Update action item status
+ *     tags: [Action Items]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [PENDING, IN_PROGRESS, COMPLETED]
+ *     responses:
+ *       200:
+ *         description: Status updated
+ *       404:
+ *         description: Action item not found
+ */
+
+/**
+ * @swagger
+ * /api/action-items/overdue:
+ *   get:
+ *     summary: Get all overdue action items
+ *     tags: [Action Items]
+ *     responses:
+ *       200:
+ *         description: List of overdue action items
+ */
 import { Router } from 'express';
 import { eq, and, sql } from 'drizzle-orm';
 import { z } from 'zod';
@@ -16,9 +118,11 @@ const createActionItemSchema = z.object({
 });
 
 const updateStatusSchema = z.object({
-  status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED'], {
-    errorMap: () => ({ message: 'Status must be PENDING, IN_PROGRESS, or COMPLETED' }),
-  }),
+  status: z.string()
+    .transform(val => val.toUpperCase())
+    .pipe(z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED'], {
+      errorMap: () => ({ message: 'Status must be PENDING, IN_PROGRESS, or COMPLETED' })
+    }))
 });
 
 const listQuerySchema = z.object({
@@ -178,7 +282,7 @@ router.get('/action-items/overdue', requireAuth, async (req, res, next) => {
     return res.status(200).json({
       traceId: req.traceId,
       success: true,
-      data: overdueItems,
+      data: overdueItems
     });
   } catch (err) {
     next(err);

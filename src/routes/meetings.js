@@ -1,10 +1,127 @@
+/**
+ * @swagger
+ * /api/meetings:
+ *   post:
+ *     summary: Create a new meeting
+ *     tags: [Meetings]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [title, participants, meetingDate, transcript]
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: Sprint Planning
+ *               participants:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: [alice@example.com, bob@example.com]
+ *               meetingDate:
+ *                 type: string
+ *                 example: 2026-06-04T10:00:00Z
+ *               transcript:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     timestamp:
+ *                       type: string
+ *                     speaker:
+ *                       type: string
+ *                     text:
+ *                       type: string
+ *     responses:
+ *       201:
+ *         description: Meeting created
+ *       400:
+ *         description: Validation error
+ */
+
+/**
+ * @swagger
+ * /api/meetings:
+ *   get:
+ *     summary: List all meetings with pagination and filters
+ *     tags: [Meetings]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         example: 10
+ *       - in: query
+ *         name: title
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *         example: 2026-01-01T00:00:00Z
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *         example: 2026-12-31T00:00:00Z
+ *     responses:
+ *       200:
+ *         description: List of meetings with pagination
+ */
+
+/**
+ * @swagger
+ * /api/meetings/{id}:
+ *   get:
+ *     summary: Get a meeting by ID
+ *     tags: [Meetings]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Meeting data
+ *       404:
+ *         description: Meeting not found
+ */
+
+/**
+ * @swagger
+ * /api/meetings/{id}/analyze:
+ *   post:
+ *     summary: Analyze meeting transcript with AI
+ *     tags: [Meetings]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: AI analysis with citations
+ *       404:
+ *         description: Meeting not found
+ */
 import { Router } from 'express';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, ilike, gte, lte, count} from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../db/config.js';
 import { meetings ,analyses,actionItems } from '../db/schema.js';
 import { analyzeMeeting } from '../lib/groq.js';
 import { requireAuth } from '../middlewares/auth.js';
+
 
 const router = Router();
 

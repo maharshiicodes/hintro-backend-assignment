@@ -7,10 +7,13 @@ import { errorHandler } from './middlewares/error.js';
 import meetingRoutes from './routes/meetings.js';
 import actionItemsRouter from './routes/actionItems.js';
 import { startCronJobs } from './reminders/reminderJob.js';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger.js';
 
 const app = express();
 const PORT = 8080;
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(cors());
 app.use(express.json());
 
