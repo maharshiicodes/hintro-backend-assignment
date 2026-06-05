@@ -9,6 +9,19 @@ import actionItemsRouter from './routes/actionItems.js';
 import { startCronJobs } from './reminders/reminderJob.js';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger.js';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: {
+    success: false,
+    error: { code: 'RATE_LIMIT_EXCEEDED', message: 'Too many requests, please try again later' }
+  }
+});
+
+app.use(limiter);
 
 const app = express();
 const PORT = 8080;
@@ -16,13 +29,15 @@ const PORT = 8080;
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(cors());
 app.use(express.json());
-
+app.use(limiter);
 app.use(traceMiddleware); 
 app.use(loggerMiddleware);
+app.use(helmet());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/meetings', meetingRoutes);
 app.use('/api', actionItemsRouter);
+
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'UP' });
