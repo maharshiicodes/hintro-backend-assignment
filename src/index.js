@@ -21,11 +21,11 @@ const limiter = rateLimit({
   }
 });
 
-app.use(limiter);
+
 
 const app = express();
 const PORT = 8080;
-
+app.use(limiter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(cors());
 app.use(express.json());
